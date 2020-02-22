@@ -31,7 +31,7 @@
       #{age,jdbcType=INTEGER}, #{telephone,jdbcType=VARCHAR}, #{registerMode,jdbcType=VARCHAR}, 
       #{thirdPartId,jdbcType=VARCHAR})
   </insert>
-  <insert id="insertSelective" parameterType="com.taobao.dataobject.UserDO">
+  <insert id="insertSelective" parameterType="com.taobao.dataobject.UserDO" keyProperty="id" useGeneratedKeys="true">
     insert into user_info
     <trim prefix="(" suffix=")" suffixOverrides=",">
       <if test="id != null">

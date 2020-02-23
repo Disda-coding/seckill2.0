@@ -10,7 +10,7 @@
 ## 异常  
 定义了CommonError的接口用于设置和返回异常信息和代码  
 
-定义了
+定义了BusinessException，继承了Exception类和实习了CommonError接口
 
 
 ## Controller  

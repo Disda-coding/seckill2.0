@@ -9,6 +9,8 @@ import com.taobao.error.BusinessException;
 import com.taobao.error.EmBusinessError;
 import com.taobao.service.UserService;
 import com.taobao.service.model.UserModel;
+import com.taobao.validator.ValidationResult;
+import com.taobao.validator.ValidatorImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,8 @@ public class UserServiceImpl implements UserService {
     private UserDOMapper userDOMapper;
     @Autowired
     private UserPasswordDOMapper userPasswordDOMapper;
+    @Autowired
+    private ValidatorImpl validator;
     @Override
     public UserModel getUserById(Integer id){
         UserDO userDO=userDOMapper.selectByPrimaryKey(id);
@@ -36,12 +40,15 @@ public class UserServiceImpl implements UserService {
         if (userModel==null){
             throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR);
         }
-        if (StringUtils.isEmpty(userModel.getName())
-                ||userModel.getGender()==null
-                ||userModel.getAge()==null
-                ||StringUtils.isEmpty(userModel.getTelephone()))
-            throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR);
-
+//        if (StringUtils.isEmpty(userModel.getName())
+//                ||userModel.getGender()==null
+//                ||userModel.getAge()==null
+//                ||StringUtils.isEmpty(userModel.getTelephone()))
+//            throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR);
+        ValidationResult validationResult=validator.validate(userModel);
+        if (validationResult.isHasErrors()){
+            throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR,validationResult.getErrMsg());
+        }
 
         //实现model->userDO的方法
         UserDO userDO=convertFromModel(userModel);

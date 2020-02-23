@@ -2,12 +2,13 @@ package com.taobao.validator;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class ValidationResult {
     //校验结果是否有错
-    private boolean hasErrors;
-    private Map<String,String> errorMsgMap;
+    private boolean hasErrors=false;
+    private Map<String,String> errorMsgMap = new HashMap<>();
 
     public boolean isHasErrors() {
         return hasErrors;

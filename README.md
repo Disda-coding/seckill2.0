@@ -7,8 +7,14 @@
 
 ## 类和数据库的映射
 通过Mybatis的自动生成工具产生Mapper和DO类，实现数据库和类之间的映射
+## 异常
+定义了CommonError的接口用于设置和返回异常信息和代码  
 
-## Controller
+定义了
+
+
+## Controller  
+
 包含viewobject
 里面将UserDO对象和UserPassword对象合并成为UserVO，包含所有用户属性  
 目的是为了提供开发者操作用户属性。

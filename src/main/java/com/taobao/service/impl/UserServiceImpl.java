@@ -1,5 +1,6 @@
 package com.taobao.service.impl;
 
+import com.sun.org.apache.xpath.internal.operations.String;
 import com.taobao.dao.UserDOMapper;
 import com.taobao.dao.UserPasswordDOMapper;
 import com.taobao.dataobject.UserDO;
@@ -40,15 +41,17 @@ public class UserServiceImpl implements UserService {
                 ||userModel.getAge()==null
                 ||StringUtils.isEmpty(userModel.getTelephone()))
             throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR);
-        UserDO userDO = new UserDO();
+
 
         //实现model->userDO的方法
-        userDO=convertFromModel(userModel);
+        UserDO userDO=convertFromModel(userModel);
         try{
             userDOMapper.insertSelective(userDO);
         }catch (DuplicateKeyException ex){
             throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR,"手机号已被使用!");
         }
+
+
 
 
 
@@ -58,6 +61,26 @@ public class UserServiceImpl implements UserService {
         userPasswordDOMapper.insertSelective(userPasswordDO);
 
     }
+
+    @Override
+    public UserModel validateLogin(java.lang.String telephone, java.lang.String encryptedPassword) throws BusinessException {
+        //通过用户手机获取用户信息
+        UserDO userDO=userDOMapper.selectByTelephone(telephone);
+        if(userDO==null){
+            throw new BusinessException(EmBusinessError.USER_LOGIN_FAIL);
+        }
+        UserPasswordDO userPasswordDO=userPasswordDOMapper.selectByUserId(userDO.getId());
+        UserModel userModel = convertFromDataObject(userDO,userPasswordDO);
+
+        //比对用户信息内加密的密码是否和传输进来的密码相匹配
+        if(!StringUtils.equals(encryptedPassword,userModel.getEncryptPassword())){
+            throw new BusinessException(EmBusinessError.USER_LOGIN_FAIL);
+        }
+        return userModel;
+    }
+
+
+
     private UserPasswordDO convertPasswordFromModel(UserModel userModel){
         if(userModel==null) return null;
         UserPasswordDO userPasswordDO = new UserPasswordDO();

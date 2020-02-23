@@ -7,6 +7,7 @@ import com.taobao.error.EmBusinessError;
 import com.taobao.response.CommonReturnType;
 import com.taobao.service.UserService;
 import com.taobao.service.model.UserModel;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.apache.tomcat.util.security.MD5Encoder;
 import org.springframework.beans.BeanUtils;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import sun.misc.BASE64Encoder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
@@ -31,6 +33,28 @@ public class UserController extends BaseController{
     private UserService userService;
     @Autowired
     private HttpServletRequest httpServletRequest;
+    //用户登录接口
+    @RequestMapping(value = "/login",method = {RequestMethod.POST},consumes = {CONTENT_TYPE_FORMED})
+    @ResponseBody
+    public CommonReturnType login(@RequestParam(name="telephone")String telephone,
+                                  @RequestParam(name="password")String password) throws BusinessException, UnsupportedEncodingException, NoSuchAlgorithmException {
+        //入参校验
+        if (StringUtils.isEmpty(telephone)|| StringUtils.isEmpty(password)){
+
+            throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR);
+        }
+        //用户登录服务，校验是否合法
+        UserModel userModel=userService.validateLogin(telephone,this.EncodeByMd5(password));
+
+        //将登录凭证加入到用户登录成功的Session内
+        this.httpServletRequest.getSession().setAttribute("IS_LOGIN", true);
+        this.httpServletRequest.getSession().setAttribute("LOGIN_USER", userModel);
+        return CommonReturnType.create(null);
+    }
+
+
+
+
 
     //用户注册接口
     @RequestMapping(value = "/register",method = {RequestMethod.POST},consumes = {CONTENT_TYPE_FORMED})
@@ -59,10 +83,12 @@ public class UserController extends BaseController{
         return CommonReturnType.create(null);
     }
     public String EncodeByMd5(String str) throws NoSuchAlgorithmException, UnsupportedEncodingException {
-        //确定计算方法
-        MessageDigest md5=MessageDigest.getInstance("MD5");
-        String newstr = Base64.encodeBase64String(md5.digest(str.getBytes("utf-8")));
-        return newstr;
+        // 确定计算方法
+        MessageDigest md5 = MessageDigest.getInstance("MD5");
+        BASE64Encoder base64Encoder = new BASE64Encoder();
+        // 加密字符串
+        String newStr = base64Encoder.encode(md5.digest(str.getBytes("utf-8")));
+        return newStr;
     }
 
 

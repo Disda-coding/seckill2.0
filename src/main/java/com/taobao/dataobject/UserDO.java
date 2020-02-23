@@ -59,6 +59,7 @@ public class UserDO {
         return registerMode;
     }
 
+
     public void setRegisterMode(String registerMode) {
         this.registerMode = registerMode == null ? null : registerMode.trim();
     }

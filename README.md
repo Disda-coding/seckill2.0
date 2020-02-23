@@ -56,7 +56,7 @@ UserService接口中定义了
 实现一个InitializingBean的实现类ValidatorImpl，实现了afterPropertiesSet()方法。  
 其作用在于在Bean所有的属性都被注入之后会去调用这个afterPropertiesSet()方法，其实在依赖注入完成的时候，spring会去检查这个类是否实现了InitializingBean接口，如果实现了InitializingBean接口，就会去调用这个类的afterPropertiesSet()方法。所以afterPropertiesSet()方法的执行时间点就很清楚了，发生在所有的properties被注入后。  
 将hibernate validator通过工厂初始化方式使其实例化。然后通过validate方法将错误信息返回。  
-我们只需要在用户对象中对声明的属性调用@NotNull等等注解就可以对所有属性进行规范了。
+我们只需要在用户对象中对声明的属性调用@NotNull等等注解就可以对所有属性进行规范了。****
 
    
 

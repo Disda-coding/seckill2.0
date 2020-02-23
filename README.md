@@ -14,7 +14,7 @@
 
 
 ## Controller  
-包含viewobject
+包含viewobject  
 里面将UserDO对象和UserPassword对象合并成为UserVO，包含所有用户属性  
 目的是为了提供开发者操作用户属性。
 ----------------------------------

@@ -15,11 +15,11 @@
 构造了一个枚举EmBusinessError
 
 
- 
+## Controller  
 包含viewobject  
 里面将UserDO对象和UserPassword对象合并成为UserVO，包含所有用户属性  
 目的是为了提供开发者操作用户属性。
-----------------------------------
+
 在BaseController中  
 1. 定义了 CONTENT_TYPE_FORMED="application/x-www-form-urlencoded"
 2. 定义了 ExceptionHandler用于处理抛出的异常  

@@ -43,5 +43,21 @@ Map用来封装错误代码和错误信息，通过@ResponseBody用来封装成j
 同时前端需要设置xhrFields:{withCredentials:true}使得ajax能够支持跨域，然后通过设置CONTENT_TYPE_FORMED="application/x-www-form-urlencoded"来接收表单  
 
 ## Service
+UserService接口中定义了
+* 通过用户id得到用户模型的方法
+* 注册方法
+* 登录方法
+
+通过UserServiceImpl实现类去实现业务层和持久层之间的逻辑交互，组装用户模型
+
+## Validation
+由于业务层要对每个方法去检测输入的值是否合理，代码冗余繁杂，因此可以引入javax包中的validation来解决此问题  
+首先定义一个类ValidationResult，用来保存校验的结果集，然后通过StringUtils的join方法将验证结果封装到字符串中，并以逗号形式隔开。  
+实现一个InitializingBean的实现类ValidatorImpl，实现了afterPropertiesSet()方法。  
+其作用在于在Bean所有的属性都被注入之后会去调用这个afterPropertiesSet()方法，其实在依赖注入完成的时候，spring会去检查这个类是否实现了InitializingBean接口，如果实现了InitializingBean接口，就会去调用这个类的afterPropertiesSet()方法。所以afterPropertiesSet()方法的执行时间点就很清楚了，发生在所有的properties被注入后。  
+将hibernate validator通过工厂初始化方式使其实例化。然后通过validate方法将错误信息返回。  
+我们只需要在用户对象中对声明的属性调用@NotNull等等注解就可以对所有属性进行规范了。
+
+   
 
 

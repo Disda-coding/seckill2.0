@@ -21,24 +21,7 @@ public class TaobaoApplication {
 
         SpringApplication.run(TaobaoApplication.class,args);
     }
-    @RequestMapping("/a")
-    public String test(){
-        UserDO u = new UserDO();
-        u.setAge(1);
-        u.setGender((byte) 1);
-        u.setId(1);
-        u.setRegisterMode("aa");
-        u.setName("hehe");
-        u.setTelephone("123321123");
-        u.setThirdPartId("adf");
-        try{
-            userDOMapper.insertSelective(u);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
 
-        return "ok";
-    }
     @RequestMapping("/")
     public String home(){
         UserDO userDO=userDOMapper.selectByPrimaryKey(1);

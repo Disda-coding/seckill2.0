@@ -1,5 +1,7 @@
 package com.taobao.dataobject;
 
+import org.apache.ibatis.annotations.Param;
+
 public class ItemStockDO {
     private Integer id;
 
@@ -30,4 +32,6 @@ public class ItemStockDO {
     public void setItemId(Integer itemId) {
         this.itemId = itemId;
     }
+
+
 }

@@ -40,7 +40,6 @@ public class UserController extends BaseController{
                                   @RequestParam(name="password")String password) throws BusinessException, UnsupportedEncodingException, NoSuchAlgorithmException {
         //入参校验
         if (StringUtils.isEmpty(telephone)|| StringUtils.isEmpty(password)){
-
             throw new BusinessException(EmBusinessError.PARAMETER_VALIDATION_ERROR);
         }
         //用户登录服务，校验是否合法

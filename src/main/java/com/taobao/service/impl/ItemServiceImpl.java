@@ -7,7 +7,9 @@ import com.taobao.dataobject.ItemStockDO;
 import com.taobao.error.BusinessException;
 import com.taobao.error.EmBusinessError;
 import com.taobao.service.ItemService;
+import com.taobao.service.PromoService;
 import com.taobao.service.model.ItemModel;
+import com.taobao.service.model.PromoModel;
 import com.taobao.validator.ValidationResult;
 import com.taobao.validator.ValidatorImpl;
 import org.springframework.beans.BeanUtils;
@@ -27,6 +29,8 @@ public class ItemServiceImpl implements ItemService {
     private ItemDOMapper itemDOMapper;
     @Autowired
     private ItemStockDOMapper itemStockDOMapper;
+    @Autowired
+    private PromoService promoService;
 
     @Override
     @Transactional
@@ -89,6 +93,11 @@ public class ItemServiceImpl implements ItemService {
         //将dataObje->model
         ItemModel itemModel = convertModelFromDataObject(itemDO,itemStockDO);
 
+        //获取活动商品信息
+        PromoModel promoModel =promoService.getPromoByItemId(itemModel.getId());
+        if(promoModel!=null&&promoModel.getStatus()!=3){
+            itemModel.setPromoModel(promoModel);
+        }
 
         return itemModel;
     }

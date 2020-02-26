@@ -2,6 +2,8 @@ package com.taobao.controller.viewobject;
 
 
 
+import org.joda.time.DateTime;
+
 import javax.validation.constraints.Min;
 import java.math.BigDecimal;
 
@@ -21,6 +23,50 @@ public class ItemVO {
     private Integer sales;
 
     private String imgUrl;
+
+    //记录商品是否在秒杀活动中，以及对应的状态。0、没有秒杀活动 1、表示待开始 2、表示进行中
+    private Integer promoStatus;
+
+    //秒杀活动价格
+    private BigDecimal promoPrice;
+
+    //秒杀活动ID
+    private Integer promoId;
+
+    private DateTime startDate;
+
+    public Integer getPromoStatus() {
+        return promoStatus;
+    }
+
+    public void setPromoStatus(Integer promoStatus) {
+        this.promoStatus = promoStatus;
+    }
+
+    public BigDecimal getPromoPrice() {
+        return promoPrice;
+    }
+
+    public void setPromoPrice(BigDecimal promoPrice) {
+        this.promoPrice = promoPrice;
+    }
+
+    public Integer getPromoId() {
+        return promoId;
+    }
+
+    public void setPromoId(Integer promoId) {
+        this.promoId = promoId;
+    }
+
+    public DateTime getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(DateTime startDate) {
+        this.startDate = startDate;
+    }
+
     public Integer getId() {
         return id;
     }

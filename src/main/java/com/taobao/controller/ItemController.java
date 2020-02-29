@@ -8,12 +8,14 @@ import com.taobao.service.model.ItemModel;
 import org.joda.time.format.DateTimeFormat;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import sun.plugin.com.event.COMEventHandler;
+
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Controller("item")
@@ -23,6 +25,8 @@ public class ItemController extends BaseController{
 
     @Autowired
     private ItemService itemService;
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     //创建商品的Controller
     @RequestMapping(value = "/create",method = {RequestMethod.POST},consumes = {CONTENT_TYPE_FORMED})
@@ -64,7 +68,18 @@ public class ItemController extends BaseController{
     @RequestMapping(value = "/get",method = {RequestMethod.GET})
     @ResponseBody
     public CommonReturnType getItem(@RequestParam("id")Integer id){
-        ItemModel itemModel = itemService.getItemById(id);
+        //Fetching data from redis according to ItemID
+        ItemModel itemModel = (ItemModel) redisTemplate.opsForValue().get("item_"+id);
+        //If there not exits responding itemModel, then visited the database
+        if (itemModel==null){
+            itemModel = itemService.getItemById(id);
+            //setting itemModel into redis
+            redisTemplate.opsForValue().set("item_"+id,itemModel);
+            //must setting the expired time for easy updating item attributions
+            redisTemplate.expire("item_"+id,10, TimeUnit.MINUTES);
+
+        }
+
         ItemVO itemVO=convertItemVOFromModel(itemModel);
         return CommonReturnType.create(itemVO);
     }

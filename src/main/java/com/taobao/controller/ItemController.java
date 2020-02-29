@@ -3,6 +3,7 @@ package com.taobao.controller;
 import com.taobao.controller.viewobject.ItemVO;
 import com.taobao.error.BusinessException;
 import com.taobao.response.CommonReturnType;
+import com.taobao.service.CacheService;
 import com.taobao.service.ItemService;
 import com.taobao.service.model.ItemModel;
 import org.joda.time.format.DateTimeFormat;
@@ -27,6 +28,8 @@ public class ItemController extends BaseController{
     private ItemService itemService;
     @Autowired
     private RedisTemplate redisTemplate;
+    @Autowired
+    private CacheService cacheService;
 
     //创建商品的Controller
     @RequestMapping(value = "/create",method = {RequestMethod.POST},consumes = {CONTENT_TYPE_FORMED})
@@ -68,17 +71,25 @@ public class ItemController extends BaseController{
     @RequestMapping(value = "/get",method = {RequestMethod.GET})
     @ResponseBody
     public CommonReturnType getItem(@RequestParam("id")Integer id){
-        //Fetching data from redis according to ItemID
-        ItemModel itemModel = (ItemModel) redisTemplate.opsForValue().get("item_"+id);
-        //If there not exits responding itemModel, then visited the database
+        ItemModel itemModel=null;
+        //先取本地缓存
+        itemModel= (ItemModel) cacheService.getFromCommonCache("item_"+id);
         if (itemModel==null){
-            itemModel = itemService.getItemById(id);
-            //setting itemModel into redis
-            redisTemplate.opsForValue().set("item_"+id,itemModel);
-            //must setting the expired time for easy updating item attributions
-            redisTemplate.expire("item_"+id,10, TimeUnit.MINUTES);
+            //Fetching data from redis according to ItemID
+            itemModel = (ItemModel) redisTemplate.opsForValue().get("item_"+id);
+            //If there not exits responding itemModel, then visited the database
+            if (itemModel==null){
+                itemModel = itemService.getItemById(id);
+                //setting itemModel into redis
+                redisTemplate.opsForValue().set("item_"+id,itemModel);
+                //must setting the expired time for easy updating item attributions
+                redisTemplate.expire("item_"+id,10, TimeUnit.MINUTES);
 
+            }
+            //将信息也设置到本地缓存里
+            cacheService.setCommonCache("item_"+id, itemModel);
         }
+
 
         ItemVO itemVO=convertItemVOFromModel(itemModel);
         return CommonReturnType.create(itemVO);

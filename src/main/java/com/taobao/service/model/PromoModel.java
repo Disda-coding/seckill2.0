@@ -5,7 +5,7 @@ import org.joda.time.DateTime;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-public class PromoModel implements Serializable {
+public class PromoModel {
     private Integer id;
     private String promoName;
     private DateTime startDate;

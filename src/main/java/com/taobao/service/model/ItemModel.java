@@ -6,7 +6,7 @@ import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.math.BigDecimal;
 
-public class ItemModel implements Serializable {
+public class ItemModel {
     private Integer id;
 
     @NotBlank(message = "商品名称不能为空")

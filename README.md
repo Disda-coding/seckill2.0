@@ -40,4 +40,4 @@ nginx proxy cache缓存-->JVM本地缓存-->Redis缓存-->数据库缓存
 
 开启nginx proxy cahce后发现比开启本地缓存还慢，原因是因为nginx没有使用基于内存的缓存，而是硬盘缓存
 
-因此我们抛弃了这种方法，然后开启nginx的内存缓存。
+因此我们抛弃了这种方法，然后开启nginx的内存缓存:nginx lua

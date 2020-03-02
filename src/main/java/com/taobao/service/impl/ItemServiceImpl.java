@@ -6,18 +6,25 @@ import com.taobao.dataobject.ItemDO;
 import com.taobao.dataobject.ItemStockDO;
 import com.taobao.error.BusinessException;
 import com.taobao.error.EmBusinessError;
+import com.taobao.mq.MqProducer;
 import com.taobao.service.ItemService;
 import com.taobao.service.PromoService;
 import com.taobao.service.model.ItemModel;
 import com.taobao.service.model.PromoModel;
 import com.taobao.validator.ValidationResult;
 import com.taobao.validator.ValidatorImpl;
+import org.apache.rocketmq.client.exception.MQBrokerException;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +38,13 @@ public class ItemServiceImpl implements ItemService {
     private ItemStockDOMapper itemStockDOMapper;
     @Autowired
     private PromoService promoService;
+    @Autowired
+    private RedisTemplate redisTemplate;
+    @Autowired
+    private MqProducer mqProducer;
+
+
+
 
     @Override
     @Transactional
@@ -103,15 +117,35 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    public ItemModel getItemByIdInCache(Integer id) {
+        ItemModel itemModel= (ItemModel) redisTemplate.opsForValue().get("item_validate_"+id);
+        if(itemModel==null){
+            itemModel=this.getItemById(id);
+            redisTemplate.opsForValue().set("item_validate_"+id,itemModel);
+            redisTemplate.expire("item_validate_"+id,10, TimeUnit.MINUTES);
+        }
+        return itemModel;
+    }
+
+    @Override
     @Transactional
     public boolean decreaseStock(Integer itemId, Integer amount) throws BusinessException{
         int affectedRow=itemStockDOMapper.decreaseStock(itemId,amount);
-        if(affectedRow>0){
+        long result = redisTemplate.opsForValue().increment("promo_item_stock_"+itemId,amount.intValue()*-1);
+        if(result>=0){
             //更新库存成功
+            Boolean mqResult=mqProducer.asyncReduceStock(itemId, amount);
+            if(!mqResult) {
+                redisTemplate.opsForValue().increment("promo_item_stock_" + itemId, amount.intValue());
+                return false;//更新库存失败
+            }
             return true;
+        }else{
+            //更新库存失败
+            redisTemplate.opsForValue().increment("promo_item_stock_" + itemId, amount.intValue());
+            return false;//更新库存失败
         }
-        //更新库存失败
-        return false;
+
     }
 
     @Override

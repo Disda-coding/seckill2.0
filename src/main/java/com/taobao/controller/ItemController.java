@@ -5,6 +5,7 @@ import com.taobao.error.BusinessException;
 import com.taobao.response.CommonReturnType;
 import com.taobao.service.CacheService;
 import com.taobao.service.ItemService;
+import com.taobao.service.PromoService;
 import com.taobao.service.model.ItemModel;
 import org.joda.time.format.DateTimeFormat;
 import org.springframework.beans.BeanUtils;
@@ -30,6 +31,8 @@ public class ItemController extends BaseController{
     private RedisTemplate redisTemplate;
     @Autowired
     private CacheService cacheService;
+    @Autowired
+    private PromoService promoService;
 
     //创建商品的Controller
     @RequestMapping(value = "/create",method = {RequestMethod.POST},consumes = {CONTENT_TYPE_FORMED})
@@ -93,6 +96,13 @@ public class ItemController extends BaseController{
 
         ItemVO itemVO=convertItemVOFromModel(itemModel);
         return CommonReturnType.create(itemVO);
+    }
+
+    @RequestMapping(value = "/publishpromo",method = {RequestMethod.GET})
+    @ResponseBody
+    public CommonReturnType publishPromo(@RequestParam("id")Integer id){
+        promoService.publishPromo(id);
+        return CommonReturnType.create(null);
     }
 
     //商品列表浏览

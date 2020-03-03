@@ -2,6 +2,7 @@ package com.taobao.controller;
 
 import com.taobao.error.BusinessException;
 import com.taobao.error.EmBusinessError;
+import com.taobao.mq.MqProducer;
 import com.taobao.response.CommonReturnType;
 import com.taobao.service.OrderService;
 import com.taobao.service.UserService;
@@ -29,6 +30,9 @@ public class OrderController extends BaseController{
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Autowired
+    private MqProducer mqProducer;
+
     //封装下单请求
     @RequestMapping(value = "/createorder",method = {RequestMethod.POST},consumes = {CONTENT_TYPE_FORMED})
     @ResponseBody
@@ -52,8 +56,15 @@ public class OrderController extends BaseController{
         UserModel userModel = (UserModel) redisTemplate.opsForValue().get(token);
         if(userModel==null)
             throw new BusinessException(EmBusinessError.USER_NOT_LOGIN,"用户登录过期");
-        OrderModel orderModel=orderService.createOrder(userModel.getId(),itemId,promoId,amount);
 
+        //OrderModel orderModel=orderService.createOrder(userModel.getId(),itemId,promoId,amount);
+        //加入库存流水init状态
+
+
+        //再去完成对应的下单事务型消息
+
+        if(mqProducer.transactionAsyncReduceStock(userModel.getId(),itemId,promoId,amount)==false)
+            throw new BusinessException(EmBusinessError.UNKNOWN_ERROR, "下单失败");
         return CommonReturnType.create(null);
     }
 }

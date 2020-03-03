@@ -134,18 +134,30 @@ public class ItemServiceImpl implements ItemService {
         long result = redisTemplate.opsForValue().increment("promo_item_stock_"+itemId,amount.intValue()*-1);
         if(result>=0){
             //更新库存成功
-            Boolean mqResult=mqProducer.asyncReduceStock(itemId, amount);
-            if(!mqResult) {
-                redisTemplate.opsForValue().increment("promo_item_stock_" + itemId, amount.intValue());
-                return false;//更新库存失败
-            }
+//            Boolean mqResult=mqProducer.asyncReduceStock(itemId, amount);
+//            if(!mqResult) {
+//                redisTemplate.opsForValue().increment("promo_item_stock_" + itemId, amount.intValue());
+//                return false;//更新库存失败
+//            }
             return true;
         }else{
             //更新库存失败
-            redisTemplate.opsForValue().increment("promo_item_stock_" + itemId, amount.intValue());
+            increaseStock(itemId,amount);
             return false;//更新库存失败
         }
 
+
+    }
+
+    @Override
+    public boolean increaseStock(Integer itemId, Integer amount) throws BusinessException {
+        redisTemplate.opsForValue().increment("promo_item_stock_" + itemId, amount.intValue());
+        return true;//更新库存失败
+    }
+
+    @Override
+    public boolean asyncDeceaseStock(Integer itemId, Integer amount) throws BusinessException {
+        return mqProducer.asyncReduceStock(itemId,amount);
     }
 
     @Override

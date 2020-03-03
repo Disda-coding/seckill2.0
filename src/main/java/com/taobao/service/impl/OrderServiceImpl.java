@@ -2,8 +2,10 @@ package com.taobao.service.impl;
 
 import com.taobao.dao.OrderDOMapper;
 import com.taobao.dao.SequenceDOMapper;
+import com.taobao.dao.StockLogDOMapper;
 import com.taobao.dataobject.OrderDO;
 import com.taobao.dataobject.SequenceDO;
+import com.taobao.dataobject.StockLogDO;
 import com.taobao.error.BusinessException;
 import com.taobao.error.EmBusinessError;
 import com.taobao.service.ItemService;
@@ -34,10 +36,12 @@ public class OrderServiceImpl implements OrderService {
     private OrderDOMapper orderDOMapper;
     @Autowired
     private SequenceDOMapper sequenceDOMapper;
+    @Autowired
+    private StockLogDOMapper stockLogDOMapper;
 
     @Override
     @Transactional
-    public OrderModel createOrder(Integer userId, Integer itemId,Integer promoId, Integer amount) throws BusinessException {
+    public OrderModel createOrder(Integer userId, Integer itemId,Integer promoId, Integer amount,String stockLogId) throws BusinessException {
         //1.校验下单状态，下单商品是否存在，用户是否合法，购买数量是否正确
         //ItemModel itemModel = itemService.getItemById(itemId);
         ItemModel itemModel=itemService.getItemByIdInCache(itemId);
@@ -88,6 +92,13 @@ public class OrderServiceImpl implements OrderService {
         //加上商品的销量
         itemService.increaseSales(itemId,amount);
 
+        //设置库存流水状态为成功
+        StockLogDO stockLogDO = stockLogDOMapper.selectByPrimaryKey(stockLogId);
+        if(stockLogDO == null){
+            throw new  BusinessException(EmBusinessError.UNKNOWN_ERROR);
+        }
+        stockLogDO.setStatus(2);
+        stockLogDOMapper.updateByPrimaryKey(stockLogDO);
 //        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
 //            @Override
 //            public void afterCommit(){

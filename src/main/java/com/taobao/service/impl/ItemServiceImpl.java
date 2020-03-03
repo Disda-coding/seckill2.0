@@ -2,8 +2,10 @@ package com.taobao.service.impl;
 
 import com.taobao.dao.ItemDOMapper;
 import com.taobao.dao.ItemStockDOMapper;
+import com.taobao.dao.StockLogDOMapper;
 import com.taobao.dataobject.ItemDO;
 import com.taobao.dataobject.ItemStockDO;
+import com.taobao.dataobject.StockLogDO;
 import com.taobao.error.BusinessException;
 import com.taobao.error.EmBusinessError;
 import com.taobao.mq.MqProducer;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -42,7 +45,8 @@ public class ItemServiceImpl implements ItemService {
     private RedisTemplate redisTemplate;
     @Autowired
     private MqProducer mqProducer;
-
+    @Autowired
+    private StockLogDOMapper stockLogDOMapper;
 
 
 
@@ -164,6 +168,21 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public void increaseSales(Integer itemId, Integer amount) throws BusinessException {
         itemDOMapper.increaseSales(itemId,amount);
+    }
+
+    //初始化对应的库存流水
+    @Override
+    @Transactional
+    public String initStockLog(Integer itemId, Integer amount) {
+        StockLogDO stockLogDO = new StockLogDO();
+        stockLogDO.setItemId(itemId);
+        stockLogDO.setAmount(amount);
+        stockLogDO.setStockLogId(UUID.randomUUID().toString().replace("-",""));
+        stockLogDO.setStatus(1);
+
+        stockLogDOMapper.insertSelective(stockLogDO);
+
+        return stockLogDO.getStockLogId();
     }
 
     private ItemModel convertModelFromDataObject(ItemDO itemDO,ItemStockDO itemStockDO){

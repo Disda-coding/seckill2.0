@@ -4,6 +4,7 @@ import com.taobao.error.BusinessException;
 import com.taobao.error.EmBusinessError;
 import com.taobao.mq.MqProducer;
 import com.taobao.response.CommonReturnType;
+import com.taobao.service.ItemService;
 import com.taobao.service.OrderService;
 import com.taobao.service.UserService;
 import com.taobao.service.model.OrderModel;
@@ -33,6 +34,9 @@ public class OrderController extends BaseController{
     @Autowired
     private MqProducer mqProducer;
 
+    @Autowired
+    private ItemService itemService;
+
     //封装下单请求
     @RequestMapping(value = "/createorder",method = {RequestMethod.POST},consumes = {CONTENT_TYPE_FORMED})
     @ResponseBody
@@ -59,11 +63,11 @@ public class OrderController extends BaseController{
 
         //OrderModel orderModel=orderService.createOrder(userModel.getId(),itemId,promoId,amount);
         //加入库存流水init状态
-
+        String stockLogId=itemService.initStockLog(itemId,amount);
 
         //再去完成对应的下单事务型消息
 
-        if(mqProducer.transactionAsyncReduceStock(userModel.getId(),itemId,promoId,amount)==false)
+        if(mqProducer.transactionAsyncReduceStock(userModel.getId(),itemId,promoId,amount,stockLogId)==false)
             throw new BusinessException(EmBusinessError.UNKNOWN_ERROR, "下单失败");
         return CommonReturnType.create(null);
     }
